@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -21,6 +22,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.appolica.interactiveinfowindow.InfoWindow;
 import com.rba.markersdemo.R;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -30,11 +34,12 @@ import butterknife.OnClick;
 public class MapActivity extends AppCompatActivity implements GoogleMap.OnMarkerClickListener,
         OnMapReadyCallback, MapView, InfoWindowManager.WindowShowListener{
 
-    private InfoWindow formWindow;
+    private List<InfoWindow> formWindowList = new ArrayList<>();
+    private List<MyInfoWindow> myInfoWindowList = new ArrayList<>();
     private InfoWindowManager infoWindowManager;
     private Marker marker;
-    private MyInfoWindow myInfoWindow;
     @BindView(R.id.linNavigation) LinearLayout linNavigation;
+    private HashMap<Marker, String> markerMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,19 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMarker
     @Override
     public boolean onMarkerClick(Marker marker) {
 
+        Log.i("z- onMarkerClick", marker.getSnippet());
+
+        for(int i = 0; i < markerMap.size(); i++){
+
+            if(i == Integer.parseInt(marker.getSnippet())){
+                InfoWindow infoWindow = formWindowList.get(i);
+                infoWindowManager.toggle(infoWindow, true);
+                myInfoWindowList.get(i).setTitle(marker.getTitle());
+            }
+
+        }
+
+        /*
         this.marker = marker;
         InfoWindow infoWindow = formWindow;
 
@@ -68,6 +86,7 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMarker
         }
 
         myInfoWindow.setTitle(marker.getTitle());
+        */
 
         return true;
     }
@@ -78,8 +97,10 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMarker
         LatLng latLng = new LatLng(-12.123955, -76.999392);
 
 
-        final Marker marker = googleMap.addMarker(
-                new MarkerOptions().position(latLng).title("I'm here"));
+        final Marker marker = googleMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("I'm here")
+                .snippet("0"));
 
         final int offsetX = (int) getResources().getDimension(R.dimen.marker_offset_x);
         final int offsetY = (int) getResources().getDimension(R.dimen.marker_offset_y);
@@ -87,9 +108,36 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMarker
         final InfoWindow.MarkerSpecification markerSpec =
                 new InfoWindow.MarkerSpecification(offsetX, offsetY);
 
-        myInfoWindow = new MyInfoWindow();
+        MyInfoWindow myInfoWindow = new MyInfoWindow();
         myInfoWindow.setView(this);
-        formWindow = new InfoWindow(marker, markerSpec, myInfoWindow);
+        myInfoWindowList.add(myInfoWindow);
+
+        formWindowList.add(new InfoWindow(marker, markerSpec, myInfoWindow));
+        markerMap.put(marker, "0");
+
+
+
+
+        LatLng latLng2 = new LatLng(-12.125955, -76.979392);
+
+        final Marker marker2 = googleMap.addMarker(new MarkerOptions().
+                position(latLng2)
+                .title("I'm here 2")
+                .snippet("1"));
+
+        final int offsetX2 = (int) getResources().getDimension(R.dimen.marker_offset_x);
+        final int offsetY2 = (int) getResources().getDimension(R.dimen.marker_offset_y);
+
+        final InfoWindow.MarkerSpecification markerSpec2 =
+                new InfoWindow.MarkerSpecification(offsetX2, offsetY2);
+
+        MyInfoWindow myInfoWindow2 = new MyInfoWindow();
+        myInfoWindow2.setView(this);
+        myInfoWindowList.add(myInfoWindow2);
+
+        formWindowList.add(new InfoWindow(marker2, markerSpec2, myInfoWindow2));
+        markerMap.put(marker2, "1");
+
 
         googleMap.setOnMarkerClickListener(MapActivity.this);
 
